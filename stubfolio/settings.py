@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "rest_framework",
     "apps.core",
+    "apps.concerts",
 ]
 
 MIDDLEWARE = [

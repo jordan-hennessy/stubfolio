@@ -25,3 +25,16 @@ class Song(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.concert.artist_name})"
+
+
+class TicketStub(models.Model):
+    concert = models.OneToOneField(Concert, on_delete=models.CASCADE, related_name="ticket_stub")
+    mood_tags = models.JSONField(default=list)
+    energy_score = models.IntegerField()
+    genre_tags = models.JSONField(default=list)
+    rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    design_seed = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Stub for {self.concert.artist_name} ({self.concert.date})"

@@ -15,3 +15,13 @@ class Concert(models.Model):
 
     def __str__(self):
         return f"{self.artist_name} @ {self.venue_name} ({self.date})"
+
+
+class Song(models.Model):
+    concert = models.ForeignKey(Concert, on_delete=models.CASCADE, related_name="songs")
+    title = models.CharField(max_length=255)
+    position = models.PositiveIntegerField()
+    is_encore = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.title} ({self.concert.artist_name})"

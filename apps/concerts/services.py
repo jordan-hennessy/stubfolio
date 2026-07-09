@@ -1,6 +1,9 @@
 import requests
 from datetime import datetime
 from django.conf import settings
+from django.db import transaction
+
+from apps.concerts.models import Concert, Song
 
 SETLISTFM_BASE_URL = "https://api.setlist.fm/rest/1.0"
 
@@ -86,3 +89,26 @@ def parse_setlist(raw_setlist):
         "concert": concert_data,
         "songs": songs_data,
     }
+
+
+def save_parsed_setlist(parsed_data):
+    """
+    Take the output of parse_setlist() and save it as real Concert + Song rows.
+    Wrapped in a transaction so a failure partway through leaves no partial data.
+    """
+    concert_data = parsed_data["concert"]
+    songs_data = parsed_data["songs"]
+
+    with transaction.atomic():
+        concert, created = Concert.objects.get_or_create(
+            setlistfm_id=concert_data["setlistfm_id"],
+            defaults=concert_data,
+        )
+
+        if not created:
+            return concert
+
+        for song_data in songs_data:
+            Song.objects.create(concert=concert, **song_data)
+
+    return concert

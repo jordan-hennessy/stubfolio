@@ -22,6 +22,7 @@ class Song(models.Model):
     title = models.CharField(max_length=255)
     position = models.PositiveIntegerField()
     is_encore = models.BooleanField(default=False)
+    info = models.CharField(max_length=255, blank=True, default="")
 
     def __str__(self):
         return f"{self.title} ({self.concert.artist_name})"

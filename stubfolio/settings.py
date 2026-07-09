@@ -6,6 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config("SECRET_KEY")
 SETLISTFM_API_KEY = config("SETLISTFM_API_KEY")
+GEMINI_API_KEY = config("GEMINI_API_KEY")
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 

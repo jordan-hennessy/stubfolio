@@ -1,5 +1,12 @@
 import requests
 from datetime import datetime
+import json
+
+from google import genai
+from google.genai import types
+
+from .constants import MOOD_CHOICES, GENRE_CHOICES
+
 from django.conf import settings
 from django.db import transaction
 
@@ -112,3 +119,44 @@ def save_parsed_setlist(parsed_data):
             Song.objects.create(concert=concert, **song_data)
 
     return concert
+
+
+def enrich_concert(concert):
+    """
+    Call Gemini to generate mood/genre tags and an energy score for a concert,
+    based on its setlist. Returns raw (unvalidated) data from the LLM.
+    """
+    client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
+    song_titles = list(concert.songs.values_list("title", flat=True))
+    mood_values = [choice[0] for choice in MOOD_CHOICES]
+    genre_values = [choice[0] for choice in GENRE_CHOICES]
+
+    prompt = f"""
+    A concert by {concert.artist_name} at {concert.venue_name} in {concert.city}.
+    Setlist: {", ".join(song_titles)}
+
+    Based on this setlist, suggest:
+    - 1-3 mood tags from this exact list: {mood_values}
+    - 1-2 genre tags from this exact list: {genre_values}
+    - an energy score from 1 (mellow) to 10 (intense/high-energy)
+    """
+
+    response = client.models.generate_content(
+        model="gemini-3.1-flash-lite",
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema={
+                "type": "object",
+                "properties": {
+                    "mood_tags": {"type": "array", "items": {"type": "string"}},
+                    "genre_tags": {"type": "array", "items": {"type": "string"}},
+                    "energy_score": {"type": "integer"},
+                },
+                "required": ["mood_tags", "genre_tags", "energy_score"],
+            },
+        ),
+    )
+
+    return json.loads(response.text)

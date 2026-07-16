@@ -11,6 +11,10 @@ class Concert(models.Model):
     setlistfm_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
     musicbrainz_id = models.CharField(max_length=100, null=True, blank=True)
 
+    mood_tags = models.JSONField(default=list)
+    genre_tags = models.JSONField(default=list)
+    energy_score = models.IntegerField(null=True, blank=True)  # Concert can exist before enrichment
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -29,10 +33,7 @@ class Song(models.Model):
 
 
 class TicketStub(models.Model):
-    concert = models.OneToOneField(Concert, on_delete=models.CASCADE, related_name="ticket_stub")
-    mood_tags = models.JSONField(default=list)
-    energy_score = models.IntegerField()
-    genre_tags = models.JSONField(default=list)
+    concert = models.ForeignKey(Concert, on_delete=models.CASCADE, related_name="ticket_stubs")
     rating = models.PositiveSmallIntegerField(null=True, blank=True)
     design_seed = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)

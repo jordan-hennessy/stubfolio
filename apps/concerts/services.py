@@ -162,3 +162,24 @@ def enrich_concert(concert):
     )
 
     return json.loads(response.text)
+
+
+def get_artist_setlists(mbid):
+    """
+    Fetch all setlists for a given artist mbid from setlist.fm.
+    Returns the raw JSON response, or None if rate-limited or not found.
+    """
+    url = f"{SETLISTFM_BASE_URL}/artist/{mbid}/setlists"
+    headers = {
+        "x-api-key": settings.SETLISTFM_API_KEY,
+        "Accept": "application/json",
+    }
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code in (404, 429):
+        return None
+
+    response.raise_for_status()
+
+    return response.json()

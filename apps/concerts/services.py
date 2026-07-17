@@ -40,7 +40,7 @@ def search_artist(artist_name):
     return response.json()
 
 
-def find_artist_exact_match(artist_name):
+def find_artist_exact_match(artist_name: str) -> dict | None:
     """
     Search setlist.fm for an artist and return the exact name match, if one exists.
     Returns None if no exact match is found.

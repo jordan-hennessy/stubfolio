@@ -1,4 +1,4 @@
-from apps.concerts.services import parse_setlist
+from apps.concerts.services import parse_setlist, find_artist_exact_match
 
 
 def test_parse_setlist_correctly_identifies_encore_songs():
@@ -76,3 +76,25 @@ def test_parse_setlist_continues_position_count_through_encore():
 
     positions = [song["position"] for song in result["songs"]]
     assert positions == [1, 2, 3]
+
+
+def test_find_artist_exact_match_filters_out_tribute_bands(mocker):
+    fake_response_json = {
+        "artist": [
+            {"mbid": "fake-1", "name": "Just Radiohead"},
+            {"mbid": "fake-2", "name": "Radiohead"},
+            {"mbid": "fake-3", "name": "Fake Plastic Radiohead"},
+        ]
+    }
+
+    mock_response = mocker.Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = fake_response_json
+
+    mocker.patch("apps.concerts.services.requests.get", return_value=mock_response)
+
+    result = find_artist_exact_match("Radiohead")
+
+    assert result["mbid"] == "fake-2"
+    assert result["name"] == "Radiohead"
+

@@ -1,4 +1,9 @@
-from apps.concerts.services import parse_setlist, find_artist_exact_match, search_artist
+from apps.concerts.services import (
+    parse_setlist,
+    find_artist_exact_match,
+    search_artist,
+    search_setlists,
+)
 
 
 def test_parse_setlist_correctly_identifies_encore_songs():
@@ -106,5 +111,60 @@ def test_search_artist_returns_none_on_rate_limit(mocker):
     mocker.patch("apps.concerts.services.requests.get", return_value=mock_response)
 
     result = search_artist("Radiohead")
+
+    assert result is None
+
+
+def test_search_setlists_includes_optional_filters_when_provided(mocker):
+    fake_response_json = {
+        "setlist": [],
+        "total": 0,
+        "page": 1,
+        "itemsPerPage": 20,
+    }
+
+    mock_response = mocker.Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = fake_response_json
+
+    mock_get = mocker.patch("apps.concerts.services.requests.get", return_value=mock_response)
+
+    search_setlists("Radiohead", year=2025, country_code="DK", page=2)
+
+    called_params = mock_get.call_args.kwargs["params"]
+    assert called_params["artistName"] == "Radiohead"
+    assert called_params["year"] == 2025
+    assert called_params["countryCode"] == "DK"
+    assert called_params["p"] == 2
+
+
+def test_search_setlists_omits_optional_filters_when_not_provided(mocker):
+    fake_response_json = {
+        "setlist": [],
+        "total": 0,
+        "page": 1,
+        "itemsPerPage": 20,
+    }
+
+    mock_response = mocker.Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = fake_response_json
+
+    mock_get = mocker.patch("apps.concerts.services.requests.get", return_value=mock_response)
+
+    search_setlists("Radiohead")
+
+    called_params = mock_get.call_args.kwargs["params"]
+    assert "year" not in called_params
+    assert "countryCode" not in called_params
+
+
+def test_search_setlists_returns_none_on_rate_limit(mocker):
+    mock_response = mocker.Mock()
+    mock_response.status_code = 429
+
+    mocker.patch("apps.concerts.services.requests.get", return_value=mock_response)
+
+    result = search_setlists("Radiohead")
 
     assert result is None

@@ -58,6 +58,39 @@ def find_artist_exact_match(artist_name: str) -> dict | None:
     return None
 
 
+def search_setlists(
+    artist_name: str,
+    year: int | None = None,
+    country_code: str | None = None,
+    page: int = 1,
+) -> dict | None:
+    """
+    Search setlist.fm for setlists matching an artist, optionally filtered
+    by year and/or country code, with pagination.
+    Returns the raw JSON response, or None if rate-limited or nothing found.
+    """
+    url = f"{SETLISTFM_BASE_URL}/search/setlists"
+    headers = {
+        "x-api-key": settings.SETLISTFM_API_KEY,
+        "Accept": "application/json",
+    }
+    params = {"artistName": artist_name, "p": page}
+
+    if year is not None:
+        params["year"] = year
+    if country_code is not None:
+        params["countryCode"] = country_code
+
+    response = requests.get(url, headers=headers, params=params)
+
+    if response.status_code in (404, 429):
+        return None
+
+    response.raise_for_status()
+
+    return response.json()
+
+
 def parse_setlist(raw_setlist):
     """
     Take a raw setlist dict from the setlist.fm API and shape it into

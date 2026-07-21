@@ -18,9 +18,7 @@ SETLISTFM_BASE_URL = "https://api.setlist.fm/rest/1.0"
 def search_artist(artist_name):
     """
     Search setlist.fm for an artist by name.
-    Returns the raw JSON response from setlist.fm, or None if no results are found.
-
-    TODO: also handle 429 Too Many Requests (rate limiting) explicitly, same pattern as the 404 check below. Currently a rate-limited response silently returns {'message': 'Too Many Requests'} as if it were valid data, which causes a confusing KeyError in parse_setlist() downstream instead of a clear error here.
+    Returns the raw JSON response from setlist.fm, or None if no results are found, or if the request is rate-limited (429).
     """
 
     url = f"{SETLISTFM_BASE_URL}/search/artists"
@@ -32,7 +30,7 @@ def search_artist(artist_name):
 
     response = requests.get(url, headers=headers, params=params)
 
-    if response.status_code == 404:
+    if response.status_code in (404, 429):
         return None
 
     response.raise_for_status()

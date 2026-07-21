@@ -214,3 +214,24 @@ def get_artist_setlists(mbid):
     response.raise_for_status()
 
     return response.json()
+
+
+def get_setlist_by_id(setlist_id: str) -> dict | None:
+    """
+    Fetch a single setlist from setlist.fm by its exact setlist ID.
+    Returns the raw JSON response, or None if not found or rate-limited.
+    """
+    url = f"{SETLISTFM_BASE_URL}/setlist/{setlist_id}"
+    headers = {
+        "x-api-key": settings.SETLISTFM_API_KEY,
+        "Accept": "application/json",
+    }
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code in (404, 429):
+        return None
+
+    response.raise_for_status()
+
+    return response.json()

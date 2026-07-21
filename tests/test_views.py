@@ -90,3 +90,36 @@ def test_search_setlists_requires_artist_name(api_client):
     response = api_client.get(url)
 
     assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_create_from_setlist_uses_specific_setlist_id_when_provided(api_client, mocker):
+    fake_setlist = {
+        "id": "specific-show-456",
+        "eventDate": "04-12-2025",
+        "artist": {"name": "Radiohead", "mbid": "test-mbid"},
+        "venue": {
+            "name": "Royal Arena",
+            "city": {
+                "name": "Copenhagen",
+                "country": {"name": "Denmark"},
+            },
+        },
+        "sets": {"set": [{"song": [{"name": "Planet Telex"}]}]},
+    }
+
+    fake_enrichment = {
+        "mood_tags": ["melancholic"],
+        "genre_tags": ["rock"],
+        "energy_score": 7,
+    }
+
+    mocker.patch("apps.concerts.views.get_setlist_by_id", return_value=fake_setlist)
+    mocker.patch("apps.concerts.views.enrich_concert", return_value=fake_enrichment)
+
+    url = reverse("concert-create-from-setlist")
+    response = api_client.post(url, {"setlist_id": "specific-show-456"}, format="json")
+
+    assert response.status_code == 201
+    assert response.data["setlistfm_id"] == "specific-show-456"
+    assert response.data["date"] == "2025-12-04"

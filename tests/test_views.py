@@ -59,3 +59,34 @@ def test_create_from_setlist_creates_concert_and_songs(api_client, mocker):
 
     concert = Concert.objects.get(setlistfm_id="setlist-abc")
     assert concert.songs.count() == 1
+
+
+@pytest.mark.django_db
+def test_search_setlists_returns_filtered_results(api_client, mocker):
+    fake_response = {
+        "setlist": [
+            {"id": "abc123", "eventDate": "16-12-2025"},
+        ],
+        "total": 1,
+        "page": 1,
+        "itemsPerPage": 20,
+    }
+
+    mocker.patch("apps.concerts.views.search_setlists_service", return_value=fake_response)
+
+    url = reverse("concert-search-setlists")
+    response = api_client.get(
+        url, {"artist_name": "Radiohead", "year": "2025", "country_code": "DK"}
+    )
+
+    assert response.status_code == 200
+    assert response.data["total"] == 1
+    assert response.data["setlist"][0]["id"] == "abc123"
+
+
+@pytest.mark.django_db
+def test_search_setlists_requires_artist_name(api_client):
+    url = reverse("concert-search-setlists")
+    response = api_client.get(url)
+
+    assert response.status_code == 400

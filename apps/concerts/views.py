@@ -10,6 +10,7 @@ from .services import (
     parse_setlist,
     save_parsed_setlist,
     enrich_concert,
+    search_setlists as search_setlists_service,
 )
 
 
@@ -56,6 +57,35 @@ class ConcertViewSet(viewsets.ReadOnlyModelViewSet):
 
         serializer = self.get_serializer(concert)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=["get"])
+    def search_setlists(self, request):
+        artist_name = request.query_params.get("artist_name")
+
+        if not artist_name:
+            return Response(
+                {"error": "artist_name is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        year = request.query_params.get("year")
+        country_code = request.query_params.get("country_code")
+        page = request.query_params.get("page", 1)
+
+        results = search_setlists_service(
+            artist_name=artist_name,
+            year=int(year) if year else None,
+            country_code=country_code,
+            page=int(page),
+        )
+
+        if results is None:
+            return Response(
+                {"error": "No setlists found, or rate limited"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(results)
 
 
 class TicketStubViewSet(viewsets.ModelViewSet):

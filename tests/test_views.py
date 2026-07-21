@@ -1,5 +1,7 @@
 import pytest
 from django.urls import reverse
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User
 
 
 @pytest.mark.django_db
@@ -123,3 +125,35 @@ def test_create_from_setlist_uses_specific_setlist_id_when_provided(api_client, 
     assert response.status_code == 201
     assert response.data["setlistfm_id"] == "specific-show-456"
     assert response.data["date"] == "2025-12-04"
+
+
+@pytest.mark.django_db
+def test_ticket_stub_requires_authentication(api_client):
+    response = api_client.post("/api/ticket-stubs/", {}, format="json")
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_ticket_stub_auto_assigns_logged_in_user(api_client):
+    user = User.objects.create_user(username="testuser", password="testpass123")
+    token = Token.objects.create(user=user)
+
+    from apps.concerts.models import Concert
+
+    concert = Concert.objects.create(
+        artist_name="Test Artist",
+        venue_name="Test Venue",
+        city="Test City",
+        country="Test Country",
+        date="2026-01-01",
+    )
+
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+    response = api_client.post(
+        "/api/ticket-stubs/",
+        {"concert": concert.id, "rating": 8, "design_seed": "abc"},
+        format="json",
+    )
+
+    assert response.status_code == 201
+    assert response.data["user"] == user.id

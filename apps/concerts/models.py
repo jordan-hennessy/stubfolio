@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class Concert(models.Model):
@@ -34,6 +35,9 @@ class Song(models.Model):
 
 class TicketStub(models.Model):
     concert = models.ForeignKey(Concert, on_delete=models.CASCADE, related_name="ticket_stubs")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ticket_stubs"
+    )
     rating = models.PositiveSmallIntegerField(null=True, blank=True)
     design_seed = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1,12 +1,14 @@
+from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from .views import ConcertViewSet, TicketStubViewSet
+from .views_auth import LoginView
 
 router = DefaultRouter()
 router.register("concerts", ConcertViewSet, basename="concert")
 router.register("ticket-stubs", TicketStubViewSet, basename="ticketstub")
 
-urlpatterns = router.urls
+urlpatterns = router.urls + [path("login/", LoginView.as_view(), name="login")]
 
 # What we would do without router:
 # path("concerts/", concert_list_view)

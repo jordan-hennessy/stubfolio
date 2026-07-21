@@ -1,6 +1,7 @@
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 from .models import Concert, TicketStub
 from .serializers import ConcertSerializer, TicketStubSerializer
@@ -98,3 +99,7 @@ class ConcertViewSet(viewsets.ReadOnlyModelViewSet):
 class TicketStubViewSet(viewsets.ModelViewSet):
     queryset = TicketStub.objects.all()
     serializer_class = TicketStubSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

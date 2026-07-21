@@ -10,11 +10,12 @@ class TicketStubSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "concert",
+            "user",
             "rating",
             "design_seed",
             "created_at",
         ]
-        read_only_fields = ["id", "created_at"]
+        read_only_fields = ["id", "user", "created_at"]
 
 
 class ConcertSerializer(serializers.ModelSerializer):

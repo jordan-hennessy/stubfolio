@@ -188,3 +188,38 @@ def test_ticket_stub_list_only_shows_own_stubs(api_client):
 
     assert response.status_code == 200
     assert len(response.data) == 0
+
+@pytest.mark.django_db
+def test_signup_creates_user_and_returns_token(api_client):
+    response = api_client.post(
+        "/api/signup/",
+        {"username": "freshuser", "password": "somepass123"},
+        format="json",
+    )
+
+    assert response.status_code == 201
+    assert response.data["username"] == "freshuser"
+    assert "token" in response.data
+    assert User.objects.filter(username="freshuser").exists()
+
+
+@pytest.mark.django_db
+def test_signup_rejects_duplicate_username(api_client):
+    User.objects.create_user(username="existing", password="pass123")
+
+    response = api_client.post(
+        "/api/signup/",
+        {"username": "existing", "password": "newpass123"},
+        format="json",
+    )
+
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_signup_requires_password(api_client):
+    response = api_client.post(
+        "/api/signup/", {"username": "noPasswordUser"}, format="json"
+    )
+
+    assert response.status_code == 400

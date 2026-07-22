@@ -97,9 +97,11 @@ class ConcertViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class TicketStubViewSet(viewsets.ModelViewSet):
-    queryset = TicketStub.objects.all()
     serializer_class = TicketStubSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return TicketStub.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

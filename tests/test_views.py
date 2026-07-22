@@ -157,3 +157,34 @@ def test_ticket_stub_auto_assigns_logged_in_user(api_client):
 
     assert response.status_code == 201
     assert response.data["user"] == user.id
+
+
+@pytest.mark.django_db
+def test_ticket_stub_list_only_shows_own_stubs(api_client):
+    user1 = User.objects.create_user(username="user1", password="pass123")
+    user2 = User.objects.create_user(username="user2", password="pass123")
+    token1 = Token.objects.create(user=user1)
+    token2 = Token.objects.create(user=user2)
+
+    from apps.concerts.models import Concert
+
+    concert = Concert.objects.create(
+        artist_name="Test Artist",
+        venue_name="Test Venue",
+        city="Test City",
+        country="Test Country",
+        date="2026-01-01",
+    )
+
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token1.key}")
+    api_client.post(
+        "/api/ticket-stubs/",
+        {"concert": concert.id, "rating": 9, "design_seed": "user1-stub"},
+        format="json",
+    )
+
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token2.key}")
+    response = api_client.get("/api/ticket-stubs/")
+
+    assert response.status_code == 200
+    assert len(response.data) == 0

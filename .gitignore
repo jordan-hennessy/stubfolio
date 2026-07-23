@@ -219,3 +219,9 @@ __marimo__/
 
 
 .DS_Store
+
+# Frontend (Node/Vite)
+node_modules
+dist
+dist-ssr
+*.local

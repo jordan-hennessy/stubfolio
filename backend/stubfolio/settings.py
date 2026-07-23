@@ -24,10 +24,12 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "apps.core",
     "apps.concerts",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -71,3 +73,7 @@ REST_FRAMEWORK = {
 }
 
 STATIC_URL = "static/"
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]

@@ -24,7 +24,19 @@ function MyCollectionPage() {
       .then((data) => setConcerts(data));
   }, []);
 
-  return <h1>Concerts Page</h1>;
+  return (
+    <div>
+      <h1>My Collection</h1>
+      <ul>
+        {concerts.map((concert) => (
+          <li key={concert.id}>
+            {concert.artist_name} - {concert.venue_name}, {concert.city} (
+            {concert.date})
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 export default MyCollectionPage;

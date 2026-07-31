@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.concerts",
     "corsheaders",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -70,6 +71,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.TokenAuthentication",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 STATIC_URL = "static/"

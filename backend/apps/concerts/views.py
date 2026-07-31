@@ -1,24 +1,29 @@
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from .models import Concert, TicketStub
 from .serializers import ConcertSerializer, TicketStubSerializer
 from .services import (
+    enrich_concert,
     find_artist_exact_match,
     get_artist_setlists,
+    get_setlist_by_id,
     parse_setlist,
     save_parsed_setlist,
-    enrich_concert,
+)
+from .services import (
     search_setlists as search_setlists_service,
-    get_setlist_by_id,
 )
 
 
 class ConcertViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Concert.objects.all()  # Will have to change when auth is set up
+    permission_classes = [IsAuthenticated]  # noqa: RUF012
     serializer_class = ConcertSerializer
+
+    def get_queryset(self):  # type: ignore
+        return Concert.objects.filter(ticket_stubs__user=self.request.user)
 
     @action(detail=False, methods=["post"])
     def create_from_setlist(self, request):
@@ -98,9 +103,9 @@ class ConcertViewSet(viewsets.ReadOnlyModelViewSet):
 
 class TicketStubViewSet(viewsets.ModelViewSet):
     serializer_class = TicketStubSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # noqa: RUF012
 
-    def get_queryset(self):
+    def get_queryset(self):  # type: ignore
         return TicketStub.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):

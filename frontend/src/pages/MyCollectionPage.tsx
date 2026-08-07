@@ -15,7 +15,7 @@ function MyCollectionPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch(`${import.meta.env.VITE_API_URL}/api/concerts`, {
+    fetch(`${import.meta.env.VITE_API_URL}/api/concerts/`, {
       headers: {
         Authorization: `Token ${token}`,
       },
@@ -27,14 +27,19 @@ function MyCollectionPage() {
   return (
     <div>
       <h1>My Collection</h1>
-      <ul>
+      <div>
         {concerts.map((concert) => (
-          <li key={concert.id}>
-            {concert.artist_name} - {concert.venue_name}, {concert.city} (
-            {concert.date})
-          </li>
+          <div key={concert.id}>
+            <div style={{ backgroundColor: "#333", height: "150px" }}></div>
+            <p>{concert.genre_tags[0]}</p>
+            <h3>{concert.artist_name}</h3>
+            <p>{concert.venue_name}</p>
+            <p>
+              {concert.city} — {concert.date}
+            </p>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

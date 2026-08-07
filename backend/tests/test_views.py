@@ -1,11 +1,15 @@
 import pytest
+from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
-from django.contrib.auth.models import User
 
 
 @pytest.mark.django_db
 def test_create_from_setlist_creates_concert_and_songs(api_client, mocker):
+    user = User.objects.create_user(username="testuser", password="testpass123")
+    token = Token.objects.create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+
     fake_search_response = {
         "artist": [
             {"mbid": "test-mbid-123", "name": "Test Band"},
@@ -60,11 +64,15 @@ def test_create_from_setlist_creates_concert_and_songs(api_client, mocker):
     from apps.concerts.models import Concert
 
     concert = Concert.objects.get(setlistfm_id="setlist-abc")
-    assert concert.songs.count() == 1
+    assert concert.songs.count() == 1  # type: ignore
 
 
 @pytest.mark.django_db
 def test_search_setlists_returns_filtered_results(api_client, mocker):
+    user = User.objects.create_user(username="testuser", password="testpass123")
+    token = Token.objects.create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+
     fake_response = {
         "setlist": [
             {"id": "abc123", "eventDate": "16-12-2025"},
@@ -88,6 +96,10 @@ def test_search_setlists_returns_filtered_results(api_client, mocker):
 
 @pytest.mark.django_db
 def test_search_setlists_requires_artist_name(api_client):
+    user = User.objects.create_user(username="testuser", password="testpass123")
+    token = Token.objects.create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+
     url = reverse("concert-search-setlists")
     response = api_client.get(url)
 
@@ -96,6 +108,10 @@ def test_search_setlists_requires_artist_name(api_client):
 
 @pytest.mark.django_db
 def test_create_from_setlist_uses_specific_setlist_id_when_provided(api_client, mocker):
+    user = User.objects.create_user(username="testuser", password="testpass123")
+    token = Token.objects.create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+
     fake_setlist = {
         "id": "specific-show-456",
         "eventDate": "04-12-2025",
@@ -151,12 +167,12 @@ def test_ticket_stub_auto_assigns_logged_in_user(api_client):
     api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
     response = api_client.post(
         "/api/ticket-stubs/",
-        {"concert": concert.id, "rating": 8, "design_seed": "abc"},
+        {"concert": concert.id, "rating": 8, "design_seed": "abc"},  # type: ignore
         format="json",
     )
 
     assert response.status_code == 201
-    assert response.data["user"] == user.id
+    assert response.data["user"] == user.id  # type: ignore
 
 
 @pytest.mark.django_db
@@ -179,7 +195,7 @@ def test_ticket_stub_list_only_shows_own_stubs(api_client):
     api_client.credentials(HTTP_AUTHORIZATION=f"Token {token1.key}")
     api_client.post(
         "/api/ticket-stubs/",
-        {"concert": concert.id, "rating": 9, "design_seed": "user1-stub"},
+        {"concert": concert.id, "rating": 9, "design_seed": "user1-stub"},  # type: ignore
         format="json",
     )
 
@@ -188,6 +204,7 @@ def test_ticket_stub_list_only_shows_own_stubs(api_client):
 
     assert response.status_code == 200
     assert len(response.data) == 0
+
 
 @pytest.mark.django_db
 def test_signup_creates_user_and_returns_token(api_client):
@@ -218,8 +235,6 @@ def test_signup_rejects_duplicate_username(api_client):
 
 @pytest.mark.django_db
 def test_signup_requires_password(api_client):
-    response = api_client.post(
-        "/api/signup/", {"username": "noPasswordUser"}, format="json"
-    )
+    response = api_client.post("/api/signup/", {"username": "noPasswordUser"}, format="json")
 
     assert response.status_code == 400

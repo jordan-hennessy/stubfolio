@@ -31,21 +31,72 @@ function LoginPage() {
   };
 
   return (
-    <div>
-      {error && <p>{error}</p>}
-      <form onSubmit={handleSubmit}>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#000",
+      }}
+    >
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          backgroundColor: "#1a1a1a",
+          padding: "40px",
+          borderRadius: "12px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
+          width: "300px",
+        }}
+      >
+        <h1 style={{ color: "white", margin: 10 }}>Login</h1>
+
+        {error && <p style={{ color: "#ff6b6b" }}>{error}</p>}
+
         <input
           type="text"
+          placeholder="Username"
           value={username}
           onChange={(event) => setUsername(event.target.value)}
+          style={{
+            padding: "10px",
+            borderRadius: "6px",
+            border: "1px solid #333",
+            backgroundColor: "#0d0d0d",
+            color: "white",
+          }}
         />
 
         <input
           type="password"
+          placeholder="Password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
+          style={{
+            padding: "10px",
+            borderRadius: "6px",
+            border: "1px solid #333",
+            backgroundColor: "#0d0d0d",
+            color: "white",
+          }}
         />
-        <button type="submit">Login</button>
+
+        <button
+          type="submit"
+          style={{
+            padding: "10px",
+            borderRadius: "6px",
+            border: "none",
+            backgroundColor: "#e8c98a",
+            fontWeight: "bold",
+            cursor: "pointer",
+          }}
+        >
+          Log in
+        </button>
       </form>
     </div>
   );

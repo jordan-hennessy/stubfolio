@@ -1,19 +1,18 @@
 from django.contrib.auth.models import User
-
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from rest_framework import status
-from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 
 class LoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data["user"]
+        user = serializer.validated_data["user"]  # type: ignore
         token, created = Token.objects.get_or_create(user=user)
         return Response({"token": token.key, "username": user.username})
 
@@ -26,6 +25,14 @@ class SignupView(APIView):
         if not username or not password:
             return Response(
                 {"error": "username and password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            return Response(
+                {"error": list(e.messages)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

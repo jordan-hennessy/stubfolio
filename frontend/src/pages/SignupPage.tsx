@@ -22,7 +22,10 @@ function SignupPage() {
           localStorage.setItem("token", data.token);
           navigate("/concerts");
         } else {
-          setError(data.error || "Signup failed");
+          const message = Array.isArray(data.error)
+            ? data.error.join(" • ")
+            : data.error || "Signup failed";
+          setError(message);
         }
       })
       .catch(() => {
@@ -53,7 +56,9 @@ function SignupPage() {
           width: "300px",
         }}
       >
-        <h1 style={{ color: "white", margin: 10 }}>Signup Page</h1>
+        <h1 style={{ color: "white", margin: "10px 0", fontSize: "28px" }}>
+          Signup Page
+        </h1>
 
         {error && <p style={{ color: "#ff6b6b" }}>{error}</p>}
 

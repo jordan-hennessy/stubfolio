@@ -234,3 +234,12 @@ def get_setlist_by_id(setlist_id: str) -> dict | None:
     response.raise_for_status()
 
     return response.json()
+
+def sort_artists_by_relevance(artists: list[dict], search_term: str) -> list[dict]:
+    """
+    Sort artist search results so exact name matches appear first.
+    Does not handle typos/misspellings - only exact (case-insensitive) matches.
+    """
+    exact_matches = [a for a in artists if a["name"].lower() == search_term.lower()]
+    other_matches = [a for a in artists if a["name"].lower() != search_term.lower()]
+    return exact_matches + other_matches

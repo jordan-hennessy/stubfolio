@@ -68,6 +68,8 @@ function AddConcertPage() {
         />
         <button type="submit">Search</button>
       </form>
+
+      {/* List of Artists */}
       {!selectedArtist && (
         <ul>
           {artists.map((artist) => (
@@ -81,15 +83,19 @@ function AddConcertPage() {
         </ul>
       )}
 
+      {/* List of Concerts */}
       {selectedArtist && (
-        <ul>
-          {setlists.map((setlist) => (
-            <li key={setlist.id}>
-              {setlist.eventDate} - {setlist.venue.name},{" "}
-              {setlist.venue.city.name}
-            </li>
-          ))}
-        </ul>
+        <div>
+          <button onClick={() => setSelectedArtist(null)}>Back</button>
+          <ul>
+            {setlists.map((setlist) => (
+              <li key={setlist.id}>
+                {setlist.eventDate} - {setlist.venue.name},{" "}
+                {setlist.venue.city.name}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );

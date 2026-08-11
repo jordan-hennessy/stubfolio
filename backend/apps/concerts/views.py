@@ -12,6 +12,8 @@ from .services import (
     get_setlist_by_id,
     parse_setlist,
     save_parsed_setlist,
+    search_artist,
+    sort_artists_by_relevance,
 )
 from .services import (
     search_setlists as search_setlists_service,
@@ -91,6 +93,49 @@ class ConcertViewSet(viewsets.ReadOnlyModelViewSet):
             country_code=country_code,
             page=int(page),
         )
+
+        if results is None:
+            return Response(
+                {"error": "No setlists found, or rate limited"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(results)
+
+    @action(detail=False, methods=["get"])
+    def search_artists(self, request):
+        artist_name = request.query_params.get("artist_name")
+
+        if not artist_name:
+            return Response(
+                {"error": "artist_name is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        results = search_artist(artist_name)
+
+        if results is None:
+            return Response(
+                {"error": "No artists found, or rate limited"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if results.get("artist"):
+            results["artist"] = sort_artists_by_relevance(results["artist"], artist_name)
+
+        return Response(results)
+
+    @action(detail=False, methods=["get"])
+    def artist_setlists(self, request):
+        mbid = request.query_params.get("mbid")
+
+        if not mbid:
+            return Response(
+                {"error": "mbid is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        results = get_artist_setlists(mbid)
 
         if results is None:
             return Response(

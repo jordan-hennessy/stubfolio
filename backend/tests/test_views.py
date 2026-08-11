@@ -238,3 +238,50 @@ def test_signup_requires_password(api_client):
     response = api_client.post("/api/signup/", {"username": "noPasswordUser"}, format="json")
 
     assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_search_artists_sorts_exact_match_first(api_client, mocker):
+    fake_response = {
+        "artist": [
+            {"name": "Fake Plastic Radiohead", "mbid": "fake-1"},
+            {"name": "Radiohead", "mbid": "real-radiohead"},
+            {"name": "Berklee Radiohead Ensemble", "mbid": "fake-2"},
+        ]
+    }
+
+    user = User.objects.create_user(username="testuser", password="testpass123")
+    token = Token.objects.create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+
+    mocker.patch("apps.concerts.views.search_artist", return_value=fake_response)
+
+    url = reverse("concert-search-artists")
+    response = api_client.get(url, {"artist_name": "Radiohead"})
+
+    assert response.status_code == 200
+    assert response.data["artist"][0]["mbid"] == "real-radiohead"
+
+
+@pytest.mark.django_db
+def test_search_artists_requires_artist_name(api_client):
+    user = User.objects.create_user(username="testuser", password="testpass123")
+    token = Token.objects.create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+
+    url = reverse("concert-search-artists")
+    response = api_client.get(url)
+
+    assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_artist_setlists_requires_mbid(api_client):
+    user = User.objects.create_user(username="testuser", password="testpass123")
+    token = Token.objects.create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+
+    url = reverse("concert-artist-setlists")
+    response = api_client.get(url)
+
+    assert response.status_code == 400

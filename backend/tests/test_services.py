@@ -1,8 +1,9 @@
 from apps.concerts.services import (
-    parse_setlist,
     find_artist_exact_match,
+    parse_setlist,
     search_artist,
     search_setlists,
+    sort_artists_by_relevance,
 )
 
 
@@ -100,8 +101,8 @@ def test_find_artist_exact_match_filters_out_tribute_bands(mocker):
 
     result = find_artist_exact_match("Radiohead")
 
-    assert result["mbid"] == "fake-2"
-    assert result["name"] == "Radiohead"
+    assert result["mbid"] == "fake-2"  # type: ignore
+    assert result["name"] == "Radiohead"  # type: ignore
 
 
 def test_search_artist_returns_none_on_rate_limit(mocker):
@@ -168,3 +169,15 @@ def test_search_setlists_returns_none_on_rate_limit(mocker):
     result = search_setlists("Radiohead")
 
     assert result is None
+
+
+def test_sort_artists_by_relevance_puts_exact_match_first():
+    artists = [
+        {"name": "Fake Plastic Radiohead"},
+        {"name": "Radiohead"},
+        {"name": "Berklee Radiohead Ensemble"},
+    ]
+
+    sorted_artists = sort_artists_by_relevance(artists, "Radiohead")
+
+    assert sorted_artists[0]["name"] == "Radiohead"

@@ -1,5 +1,11 @@
 import { useState } from "react";
 
+interface Artist {
+  mbid: string;
+  name: string;
+  disambiguation: string;
+}
+
 interface Setlist {
   id: string;
   eventDate: string;
@@ -13,7 +19,9 @@ interface Setlist {
 
 function AddConcertPage() {
   const [artistName, setArtistName] = useState("");
-  const [results, setResults] = useState<Setlist[]>([]); //use Setlist Interface
+  const [artists, setArtists] = useState<Artist[]>([]);
+  const [setlists, setSetlists] = useState<Setlist[]>([]);
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
 
   const handleSearch = (event: { preventDefault: () => void }) => {
     event.preventDefault();
@@ -21,7 +29,7 @@ function AddConcertPage() {
     const token = localStorage.getItem("token");
 
     fetch(
-      `${import.meta.env.VITE_API_URL}/api/concerts/search_setlists/?artist_name=${artistName}`,
+      `${import.meta.env.VITE_API_URL}/api/concerts/search_artists/?artist_name=${artistName}`,
       {
         headers: {
           Authorization: `Token ${token}`,
@@ -29,7 +37,24 @@ function AddConcertPage() {
       },
     )
       .then((response) => response.json())
-      .then((data) => setResults(data.setlist));
+      .then((data) => setArtists(data.artist));
+  };
+
+  const handleSelectArtist = (artist: Artist) => {
+    setSelectedArtist(artist);
+
+    const token = localStorage.getItem("token");
+
+    fetch(
+      `${import.meta.env.VITE_API_URL}/api/concerts/artist_setlists/?mbid=${artist.mbid}`,
+      {
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    )
+      .then((response) => response.json())
+      .then((data) => setSetlists(data.setlist));
   };
 
   return (
@@ -43,15 +68,29 @@ function AddConcertPage() {
         />
         <button type="submit">Search</button>
       </form>
+      {!selectedArtist && (
+        <ul>
+          {artists.map((artist) => (
+            <li key={artist.mbid}>
+              <button onClick={() => handleSelectArtist(artist)}>
+                {artist.name}
+                {artist.disambiguation && ` (${artist.disambiguation})`}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
 
-      <ul>
-        {results.map((setlist) => (
-          <li key={setlist.id}>
-            {setlist.eventDate} - {setlist.venue.name},{" "}
-            {setlist.venue.city.name}
-          </li>
-        ))}
-      </ul>
+      {selectedArtist && (
+        <ul>
+          {setlists.map((setlist) => (
+            <li key={setlist.id}>
+              {setlist.eventDate} - {setlist.venue.name},{" "}
+              {setlist.venue.city.name}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

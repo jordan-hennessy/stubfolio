@@ -1,16 +1,15 @@
-import requests
-from datetime import datetime
 import json
+from datetime import datetime
 
+import requests
+from django.conf import settings
+from django.db import transaction
 from google import genai
 from google.genai import types
 
-from .constants import MOOD_CHOICES, GENRE_CHOICES
-
-from django.conf import settings
-from django.db import transaction
-
 from apps.concerts.models import Concert, Song
+
+from .constants import GENRE_CHOICES, MOOD_CHOICES
 
 SETLISTFM_BASE_URL = "https://api.setlist.fm/rest/1.0"
 
@@ -96,7 +95,7 @@ def parse_setlist(raw_setlist):
     Take a raw setlist dict from the setlist.fm API and shape it into
     clean data ready to create a Concert + Song rows from.
     """
-    event_date = datetime.strptime(raw_setlist["eventDate"], "%d-%m-%Y").date()
+    event_date = datetime.strptime(raw_setlist["eventDate"], "%d-%m-%Y").date()  # noqa: DTZ007
 
     concert_data = {
         "artist_name": raw_setlist["artist"]["name"],
@@ -192,7 +191,7 @@ def enrich_concert(concert):
         ),
     )
 
-    return json.loads(response.text)
+    return json.loads(response.text) # type: ignore
 
 
 def get_artist_setlists(mbid):

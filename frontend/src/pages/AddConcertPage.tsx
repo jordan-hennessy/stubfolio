@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Artist {
   mbid: string;
@@ -22,6 +23,8 @@ function AddConcertPage() {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+
+  const navigate = useNavigate();
 
   const handleSearch = (event: { preventDefault: () => void }) => {
     event.preventDefault();
@@ -55,6 +58,23 @@ function AddConcertPage() {
     )
       .then((response) => response.json())
       .then((data) => setSetlists(data.setlist));
+  };
+
+  const handleCreateConcert = (setlistID: string) => {
+    const token = localStorage.getItem("token");
+
+    fetch(`${import.meta.env.VITE_API_URL}/api/concerts/create_from_setlist/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`,
+      },
+      body: JSON.stringify({ setlist_id: setlistID }),
+    })
+      .then((response) => response.json())
+      .then(() => {
+        navigate("/concerts");
+      });
   };
 
   return (
@@ -92,6 +112,9 @@ function AddConcertPage() {
               <li key={setlist.id}>
                 {setlist.eventDate} - {setlist.venue.name},{" "}
                 {setlist.venue.city.name}
+                <button onClick={() => handleCreateConcert(setlist.id)}>
+                  Add
+                </button>
               </li>
             ))}
           </ul>

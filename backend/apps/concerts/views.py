@@ -70,6 +70,10 @@ class ConcertViewSet(viewsets.ReadOnlyModelViewSet):
         concert.energy_score = enrichment["energy_score"]
         concert.save()
 
+        # Create ticket stub but set to `null`, until user generates stub
+
+        TicketStub.objects.get_or_create(concert=concert, user=request.user)
+
         serializer = self.get_serializer(concert)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

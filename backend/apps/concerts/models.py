@@ -1,5 +1,5 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 
 class Concert(models.Model):
@@ -39,7 +39,7 @@ class TicketStub(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ticket_stubs"
     )
     rating = models.PositiveSmallIntegerField(null=True, blank=True)
-    design_seed = models.CharField(max_length=255)
+    design_seed = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

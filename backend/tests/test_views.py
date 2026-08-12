@@ -285,3 +285,34 @@ def test_artist_setlists_requires_mbid(api_client):
     response = api_client.get(url)
 
     assert response.status_code == 400
+
+
+@pytest.mark.django_db
+def test_create_from_setlist_creates_pending_ticket_stub(api_client, mocker):
+    fake_setlist = {
+        "id": "pending-stub-test",
+        "eventDate": "01-01-2026",
+        "artist": {"name": "Test Artist", "mbid": "test-mbid"},
+        "venue": {
+            "name": "Test Venue",
+            "city": {"name": "Test City", "country": {"name": "Test Country"}},
+        },
+        "sets": {"set": [{"song": [{"name": "Test Song"}]}]},
+    }
+    fake_enrichment = {"mood_tags": ["energetic"], "genre_tags": ["rock"], "energy_score": 5}
+
+    user = User.objects.create_user(username="testuser", password="testpass123")
+    token = Token.objects.create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+
+    mocker.patch("apps.concerts.views.get_setlist_by_id", return_value=fake_setlist)
+    mocker.patch("apps.concerts.views.enrich_concert", return_value=fake_enrichment)
+
+    url = reverse("concert-create-from-setlist")
+    api_client.post(url, {"setlist_id": "pending-stub-test"}, format="json")
+
+    from apps.concerts.models import TicketStub
+
+    stub = TicketStub.objects.get(concert__setlistfm_id="pending-stub-test")
+    assert stub.user == user
+    assert stub.design_seed is None

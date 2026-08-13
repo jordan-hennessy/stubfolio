@@ -21,6 +21,17 @@ class TicketStubSerializer(serializers.ModelSerializer):
 class ConcertSerializer(serializers.ModelSerializer):
     mood_tags = serializers.ListField(child=serializers.ChoiceField(choices=MOOD_CHOICES))
     genre_tags = serializers.ListField(child=serializers.ChoiceField(choices=GENRE_CHOICES))
+    ticket_stub = serializers.SerializerMethodField()
+
+    def get_ticket_stub(self, obj):
+        user = self.context["request"].user
+        stub = obj.ticket_stubs.filter(user=user).first()
+        if stub is None:
+            return None
+        return {
+            "id": stub.id,
+            "design_seed": stub.design_seed,
+        }
 
     class Meta:
         model = Concert
@@ -37,5 +48,6 @@ class ConcertSerializer(serializers.ModelSerializer):
             "genre_tags",
             "energy_score",
             "created_at",
+            "ticket_stub",
         ]
         read_only_fields = ["id", "created_at"]  # noqa: RUF012

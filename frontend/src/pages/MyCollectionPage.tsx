@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
 
+interface TicketStub {
+  id: number;
+  design_seed: string | null;
+}
+
 interface Concert {
   id: number;
   artist_name: string;
@@ -7,10 +12,35 @@ interface Concert {
   city: string;
   date: string;
   genre_tags: string[];
+  ticket_stub: TicketStub | null;
 }
 
 function MyCollectionPage() {
   const [concerts, setConcerts] = useState<Concert[]>([]);
+
+  const handleGenerateStub = (stubId: number) => {
+    const token = localStorage.getItem("token");
+
+    fetch(
+      `${import.meta.env.VITE_API_URL}/api/ticket-stubs/${stubId}/generate/`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setConcerts((previous) =>
+          previous.map((concert) =>
+            concert.ticket_stub?.id === stubId
+              ? { ...concert, ticket_stub: data }
+              : concert,
+          ),
+        );
+      });
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -37,7 +67,6 @@ function MyCollectionPage() {
         }}
       >
         {concerts.map((concert) => (
-          // One card per concert
           <div
             key={concert.id}
             style={{
@@ -47,15 +76,34 @@ function MyCollectionPage() {
               color: "white",
             }}
           >
-            {/* Placeholder for the eventually-generated ticket design image */}
-            <div style={{ backgroundColor: "#32ffa3", height: "150px" }}></div>
-
-            <p>{concert.genre_tags[0]}</p>
-            <h3>{concert.artist_name}</h3>
-            <p>{concert.venue_name}</p>
-            <p>
-              {concert.city} — {concert.date}
-            </p>
+            {concert.ticket_stub?.design_seed ? (
+              <>
+                <div
+                  style={{ backgroundColor: "#32ffa3", height: "150px" }}
+                ></div>
+                <p>{concert.genre_tags[0]}</p>
+                <h3>{concert.artist_name}</h3>
+                <p>{concert.venue_name}</p>
+                <p>
+                  {concert.city} — {concert.date}
+                </p>
+              </>
+            ) : (
+              <div
+                style={{
+                  border: "2px dashed #e8c98a",
+                  padding: "20px",
+                  textAlign: "center",
+                }}
+              >
+                <p>{concert.artist_name}</p>
+                <button
+                  onClick={() => handleGenerateStub(concert.ticket_stub!.id)}
+                >
+                  Generate Stub
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>

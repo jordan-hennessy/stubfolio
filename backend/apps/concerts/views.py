@@ -72,10 +72,12 @@ class ConcertViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Create ticket stub but set to `null`, until user generates stub
 
-        TicketStub.objects.get_or_create(concert=concert, user=request.user)
+        stub, _ = TicketStub.objects.get_or_create(concert=concert, user=request.user)
 
         serializer = self.get_serializer(concert)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        response_data = serializer.data
+        response_data["ticket_stub_id"] = stub.id
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=["get"])
     def search_setlists(self, request):

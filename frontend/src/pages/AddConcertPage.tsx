@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
+//import { useNavigate } from "react-router-dom";
 
 interface Artist {
   mbid: string;
@@ -23,8 +24,10 @@ function AddConcertPage() {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [addedStubs, setAddedStubs] = useState<Record<string, number>>({});
+  const [loadingSetlistId, setLoadingSetlistId] = useState<string | null>(null); // adding a loading wheel while a consert is being added
 
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
 
   const handleSearch = (event: { preventDefault: () => void }) => {
     event.preventDefault();
@@ -61,6 +64,7 @@ function AddConcertPage() {
   };
 
   const handleCreateConcert = (setlistID: string) => {
+    setLoadingSetlistId(setlistID);
     const token = localStorage.getItem("token");
 
     fetch(`${import.meta.env.VITE_API_URL}/api/concerts/create_from_setlist/`, {
@@ -72,9 +76,31 @@ function AddConcertPage() {
       body: JSON.stringify({ setlist_id: setlistID }),
     })
       .then((response) => response.json())
-      .then(() => {
-        navigate("/concerts");
+      .then((data) => {
+        setAddedStubs((previous) => ({
+          ...previous,
+          [setlistID]: data.ticket_stub_id,
+        }));
+        setLoadingSetlistId(null);
       });
+  };
+
+  const handleRemoveConcert = (setlistID: string) => {
+    const stubId = addedStubs[setlistID];
+    const token = localStorage.getItem("token");
+
+    fetch(`${import.meta.env.VITE_API_URL}/api/ticket-stubs/${stubId}/`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    }).then(() => {
+      setAddedStubs((previous) => {
+        const updated = { ...previous };
+        delete updated[setlistID];
+        return updated;
+      });
+    });
   };
 
   return (
@@ -112,9 +138,17 @@ function AddConcertPage() {
               <li key={setlist.id}>
                 {setlist.eventDate} - {setlist.venue.name},{" "}
                 {setlist.venue.city.name}
-                <button onClick={() => handleCreateConcert(setlist.id)}>
-                  Add
-                </button>
+                {addedStubs[setlist.id] ? (
+                  <button onClick={() => handleRemoveConcert(setlist.id)}>
+                    Remove
+                  </button>
+                ) : loadingSetlistId === setlist.id ? (
+                  <Loader2 style={{ animation: "spin 1s linear infinite" }} />
+                ) : (
+                  <button onClick={() => handleCreateConcert(setlist.id)}>
+                    Add
+                  </button>
+                )}
               </li>
             ))}
           </ul>

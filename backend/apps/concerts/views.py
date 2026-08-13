@@ -159,3 +159,11 @@ class TicketStubViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=["post"])
+    def generate(self, request, pk=None):
+        stub = self.get_object()
+        stub.design_seed = f"placeholder-{stub.id}"
+        stub.save()
+        serializer = self.get_serializer(stub)
+        return Response(serializer.data)

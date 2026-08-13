@@ -316,3 +316,56 @@ def test_create_from_setlist_creates_pending_ticket_stub(api_client, mocker):
     stub = TicketStub.objects.get(concert__setlistfm_id="pending-stub-test")
     assert stub.user == user
     assert stub.design_seed is None
+
+
+@pytest.mark.django_db
+def test_generate_sets_design_seed(api_client):
+    user = User.objects.create_user(username="testuser", password="testpass123")
+    token = Token.objects.create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+
+    from apps.concerts.models import Concert
+
+    concert = Concert.objects.create(
+        artist_name="Test Artist",
+        venue_name="Test Venue",
+        city="Test City",
+        country="Test Country",
+        date="2026-01-01",
+    )
+
+    from apps.concerts.models import TicketStub
+
+    stub = TicketStub.objects.create(concert=concert, user=user)
+    assert stub.design_seed is None
+
+    url = f"/api/ticket-stubs/{stub.id}/generate/"  # type: ignore
+    response = api_client.post(url)
+
+    assert response.status_code == 200
+    stub.refresh_from_db()
+    assert stub.design_seed == f"placeholder-{stub.id}"  # type: ignore
+
+
+@pytest.mark.django_db
+def test_generate_only_works_on_own_stub(api_client):
+    user1 = User.objects.create_user(username="user1", password="pass123")
+    user2 = User.objects.create_user(username="user2", password="pass123")
+    token2 = Token.objects.create(user=user2)
+
+    from apps.concerts.models import Concert, TicketStub
+
+    concert = Concert.objects.create(
+        artist_name="Test Artist",
+        venue_name="Test Venue",
+        city="Test City",
+        country="Test Country",
+        date="2026-01-01",
+    )
+    stub = TicketStub.objects.create(concert=concert, user=user1)
+
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token2.key}")
+    url = f"/api/ticket-stubs/{stub.id}/generate/"  # type: ignore
+    response = api_client.post(url)
+
+    assert response.status_code == 404

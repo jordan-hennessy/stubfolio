@@ -1,13 +1,13 @@
 from rest_framework import serializers
 
-from .constants import MOOD_CHOICES, GENRE_CHOICES
-from .models import TicketStub, Concert
+from .constants import GENRE_CHOICES, MOOD_CHOICES
+from .models import Concert, TicketStub
 
 
 class TicketStubSerializer(serializers.ModelSerializer):
     class Meta:
         model = TicketStub
-        fields = [
+        fields = [  # noqa: RUF012
             "id",
             "concert",
             "user",
@@ -15,7 +15,7 @@ class TicketStubSerializer(serializers.ModelSerializer):
             "design_seed",
             "created_at",
         ]
-        read_only_fields = ["id", "user", "created_at"]
+        read_only_fields = ["id", "user", "created_at"]  # noqa: RUF012
 
 
 class ConcertSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class ConcertSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Concert
-        fields = [
+        fields = [  # noqa: RUF012
             "id",
             "artist_name",
             "venue_name",
@@ -38,4 +38,4 @@ class ConcertSerializer(serializers.ModelSerializer):
             "energy_score",
             "created_at",
         ]
-        read_only_fields = ["id", "created_at"]
+        read_only_fields = ["id", "created_at"]  # noqa: RUF012

@@ -1,10 +1,14 @@
 @import "tailwindcss";
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+@theme {
+  --color-brand-bg: #0d0d0d;
+  --color-brand-card: #1a1a1a;
+  --color-brand-gold: #e8c98a;
+  --color-brand-error: #ff6b6b;
+  --font-brand-mono: "Fira Code", monospace;
+  --font-brand-sans: "Space Grotesk", sans-serif;
+}
+
+body {
+  font-family: var(--font-brand-sans);
 }

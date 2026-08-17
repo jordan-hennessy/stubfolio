@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 import StubfolioLogo from "../assets/stubfolio-mark.svg";
 
@@ -36,7 +37,13 @@ function Navbar() {
         to="/concerts"
         className="flex items-center gap-2 text-white font-bold no-underline"
       >
-        <img src={StubfolioLogo} alt="Stubfolio" className="h-8 w-8" />
+        <motion.img
+          src={StubfolioLogo}
+          alt="Stubfolio"
+          className="h-8 w-8"
+          whileHover={{ rotate: 15, scale: 1.1 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        />
         <span className="font-brand-mono text-xl">Stubfolio</span>
       </Link>
 

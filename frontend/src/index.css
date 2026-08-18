@@ -9,6 +9,32 @@
   --font-brand-sans: "Space Grotesk", sans-serif;
 }
 
+:root {
+  color-scheme: dark;
+  /* Firefox */
+  scrollbar-color: #e8c98a #0d0d0d;
+  scrollbar-width: thin;
+}
+
+/* Chrome / Safari */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d0d0d;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a1a1a;
+  border-radius: 8px;
+  border: 2px solid #0d0d0d;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e8c98a;
+}
+
 body {
   font-family: var(--font-brand-sans);
 }

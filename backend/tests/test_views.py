@@ -369,3 +369,24 @@ def test_generate_only_works_on_own_stub(api_client):
     response = api_client.post(url)
 
     assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_artist_setlists_applies_year_filter(api_client, mocker):
+    fake_response = {"setlist": [{"id": "abc123", "eventDate": "01-01-2024"}]}
+
+    user = User.objects.create_user(username="testuser", password="testpass123")
+    token = Token.objects.create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+
+    mock_search = mocker.patch(
+        "apps.concerts.views.search_setlists_service", return_value=fake_response
+    )
+
+    url = reverse("concert-artist-setlists")
+    response = api_client.get(url, {"mbid": "test-mbid", "year": "2024"})
+
+    assert response.status_code == 200
+    mock_search.assert_called_once_with(
+        artist_mbid="test-mbid", year=2024, country_code=None, page=1
+    )

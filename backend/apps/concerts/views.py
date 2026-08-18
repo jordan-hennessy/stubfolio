@@ -141,7 +141,16 @@ class ConcertViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        results = get_artist_setlists(mbid)
+        year = request.query_params.get("year")
+        country_code = request.query_params.get("country_code")
+        page = request.query_params.get("page", 1)
+
+        results = search_setlists_service(
+            artist_mbid=mbid,
+            year=int(year) if year else None,
+            country_code=country_code,
+            page=int(page),
+        )
 
         if results is None:
             return Response(

@@ -58,14 +58,15 @@ def find_artist_exact_match(artist_name: str) -> dict | None:
 
 
 def search_setlists(
-    artist_name: str,
+    artist_name: str | None = None,
+    artist_mbid: str | None = None,
     year: int | None = None,
     country_code: str | None = None,
     page: int = 1,
 ) -> dict | None:
     """
-    Search setlist.fm for setlists matching an artist, optionally filtered
-    by year and/or country code, with pagination.
+    Search setlist.fm for setlists matching an artist (by name or mbid),
+    optionally filtered by year and/or country code, with pagination.
     Returns the raw JSON response, or None if rate-limited or nothing found.
     """
     url = f"{SETLISTFM_BASE_URL}/search/setlists"
@@ -73,12 +74,15 @@ def search_setlists(
         "x-api-key": settings.SETLISTFM_API_KEY,
         "Accept": "application/json",
     }
-    params = {"artistName": artist_name, "p": page}
-
+    params = {"p": page}
+    if artist_mbid is not None:
+        params["artistMbid"] = artist_mbid  # type: ignore
+    elif artist_name is not None:
+        params["artistName"] = artist_name  # type: ignore
     if year is not None:
         params["year"] = year
     if country_code is not None:
-        params["countryCode"] = country_code
+        params["countryCode"] = country_code  # type: ignore
 
     response = requests.get(url, headers=headers, params=params)
 
@@ -191,7 +195,7 @@ def enrich_concert(concert):
         ),
     )
 
-    return json.loads(response.text) # type: ignore
+    return json.loads(response.text)  # type: ignore
 
 
 def get_artist_setlists(mbid):
@@ -234,6 +238,7 @@ def get_setlist_by_id(setlist_id: str) -> dict | None:
     response.raise_for_status()
 
     return response.json()
+
 
 def sort_artists_by_relevance(artists: list[dict], search_term: str) -> list[dict]:
     """

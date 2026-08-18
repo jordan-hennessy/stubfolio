@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function LoginPage() {
   const [username, setUsername] = useState("");
@@ -31,73 +31,49 @@ function LoginPage() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#000",
-      }}
-    >
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          backgroundColor: "#1a1a1a",
-          padding: "40px",
-          borderRadius: "12px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "16px",
-          width: "300px",
-        }}
-      >
-        <h1 style={{ color: "white", margin: 10 }}>Login</h1>
-
-        {error && <p style={{ color: "#ff6b6b" }}>{error}</p>}
-
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(event) => setUsername(event.target.value)}
-          style={{
-            padding: "10px",
-            borderRadius: "6px",
-            border: "1px solid #333",
-            backgroundColor: "#0d0d0d",
-            color: "white",
-          }}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          style={{
-            padding: "10px",
-            borderRadius: "6px",
-            border: "1px solid #333",
-            backgroundColor: "#0d0d0d",
-            color: "white",
-          }}
-        />
-
-        <button
-          type="submit"
-          style={{
-            padding: "10px",
-            borderRadius: "6px",
-            border: "none",
-            backgroundColor: "#e8c98a",
-            fontWeight: "bold",
-            cursor: "pointer",
-          }}
+    <div className="min-h-[calc(100vh-88px)] flex justify-center items-center bg-brand-bg">
+      <div>
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4 w-75 p-10 rounded-xl bg-brand-card"
         >
-          Log in
-        </button>
-      </form>
+          <h1 className="text-white text-2xl font-brand-mono">Login</h1>
+
+          {error && <p className="text-brand-error">{error}</p>}
+
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            className="p-2.5 rounded-md border border-gray-800 bg-brand-bg text-white"
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            className="p-2.5 rounded-md border border-gray-800 bg-brand-bg text-white"
+          />
+
+          <button
+            type="submit"
+            className="p-2.5 rounded-md bg-brand-gold font-bold cursor-pointer hover:opacity-90 transition-opacity"
+          >
+            Log in
+          </button>
+        </form>
+        <p className="text-center text-gray-500 mt-4">
+          Don't have an account?{" "}
+          <Link
+            to="/signup"
+            className="text-brand-gold hover:opacity-80 transition-opacity"
+          >
+            Sign up
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

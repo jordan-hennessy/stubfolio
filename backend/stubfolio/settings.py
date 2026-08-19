@@ -87,9 +87,11 @@ REST_FRAMEWORK = {
 
 STATIC_URL = "static/"
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
+CORS_ALLOWED_ORIGINS = config(
+    "CORS_ALLOWED_ORIGINS",
+    default="http://localhost:5173",
+    cast=Csv(),
+)
 
 CORS_ALLOW_HEADERS = [
     "content-type",

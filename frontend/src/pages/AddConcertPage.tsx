@@ -30,6 +30,7 @@ function AddConcertPage() {
   const [loadingSetlistId, setLoadingSetlistId] = useState<string | null>(null);
 
   const [setlistError, setSetlistError] = useState<string | null>(null);
+  const [myConcertIds, setMyConcertIds] = useState<Set<string>>(new Set());
 
   // Debouncing auto-filter
   const [yearFilter, setYearFilter] = useState("");
@@ -125,24 +126,6 @@ function AddConcertPage() {
       });
   };
 
-  const handleRemoveConcert = (setlistID: string) => {
-    const stubId = addedStubs[setlistID];
-    const token = localStorage.getItem("token");
-
-    fetch(`${import.meta.env.VITE_API_URL}/api/ticket-stubs/${stubId}/`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Token ${token}`,
-      },
-    }).then(() => {
-      setAddedStubs((previous) => {
-        const updated = { ...previous };
-        delete updated[setlistID];
-        return updated;
-      });
-    });
-  };
-
   useEffect(() => {
     if (!selectedArtist) return;
 
@@ -152,6 +135,23 @@ function AddConcertPage() {
 
     return () => clearTimeout(timer);
   }, [yearFilter, countryFilter]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    fetch(`${import.meta.env.VITE_API_URL}/api/concerts/`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const ids = data.map(
+          (concert: { setlistfm_id: string }) => concert.setlistfm_id,
+        );
+        setMyConcertIds(new Set(ids));
+      });
+  }, []);
 
   const selectClassNames = {
     control: () => "bg-brand-card border border-gray-800 rounded-md px-1 w-48",
@@ -250,12 +250,12 @@ function AddConcertPage() {
                   {setlist.venue.city.name}
                 </span>
 
-                {addedStubs[setlist.id] ? (
+                {addedStubs[setlist.id] || myConcertIds.has(setlist.id) ? (
                   <button
-                    onClick={() => handleRemoveConcert(setlist.id)}
-                    className="px-3.5 py-1.5 rounded-md border border-brand-error bg-transparent text-brand-error cursor-pointer"
+                    disabled
+                    className="px-3.5 py-1.5 rounded-md bg-gray-700 text-gray-400 cursor-not-allowed"
                   >
-                    Remove
+                    Added
                   </button>
                 ) : loadingSetlistId === setlist.id ? (
                   <Loader2 className="animate-spin" />

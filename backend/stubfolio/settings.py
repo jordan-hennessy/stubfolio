@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import dj_database_url
 from decouple import Csv, config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -70,16 +71,9 @@ ROOT_URLCONF = "stubfolio.urls"
 
 WSGI_APPLICATION = "stubfolio.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME", default="stubfolio"),
-        "USER": config("DB_USER", default=""),
-        "PASSWORD": config("DB_PASSWORD", default=""),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),
-    }
-}
+DATABASE_URL = config("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
+
+DATABASES = {"default": dj_database_url.config(default=DATABASE_URL)}  # type: ignore
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

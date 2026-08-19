@@ -86,8 +86,10 @@ def search_setlists(
 
     response = requests.get(url, headers=headers, params=params)
 
-    if response.status_code in (404, 429):
+    if response.status_code == 429:
         return None
+    if response.status_code == 404:
+        return {"setlist": []}
 
     response.raise_for_status()
 
@@ -232,8 +234,10 @@ def get_setlist_by_id(setlist_id: str) -> dict | None:
 
     response = requests.get(url, headers=headers)
 
-    if response.status_code in (404, 429):
+    if response.status_code == 429:
         return None
+    if response.status_code == 404:
+        return {"setlist": []}
 
     response.raise_for_status()
 

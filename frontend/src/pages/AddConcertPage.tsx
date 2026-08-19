@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import Select from "react-select";
+
+import countryList from "country-list";
 
 interface Artist {
   mbid: string;
@@ -26,6 +29,30 @@ function AddConcertPage() {
   const [addedStubs, setAddedStubs] = useState<Record<string, number>>({});
   const [loadingSetlistId, setLoadingSetlistId] = useState<string | null>(null);
 
+  const [setlistError, setSetlistError] = useState<string | null>(null);
+
+  // Debouncing auto-filter
+  const [yearFilter, setYearFilter] = useState("");
+  const [countryFilter, setCountryFilter] = useState("");
+
+  const countries = countryList
+    .getData()
+    .map((country: { code: string; name: string }) => ({
+      label: country.name,
+      value: country.code,
+    }));
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 100 }, (_, i) => currentYear - i).map(
+    (year) => ({
+      label: String(year),
+      value: String(year),
+    }),
+  );
+
+  const yearOptions = [{ label: "Any Year", value: "" }, ...years];
+  const countryOptions = [{ label: "Any Country", value: "" }, ...countries];
+
   const handleSearch = (event: { preventDefault: () => void }) => {
     event.preventDefault();
 
@@ -43,13 +70,15 @@ function AddConcertPage() {
       .then((data) => setArtists(data.artist));
   };
 
-  const handleSelectArtist = (artist: Artist) => {
-    setSelectedArtist(artist);
-
+  const fetchSetlists = (mbid: string, year: string, countryCode: string) => {
     const token = localStorage.getItem("token");
 
+    const params = new URLSearchParams({ mbid });
+    if (year) params.append("year", year);
+    if (countryCode) params.append("country_code", countryCode);
+
     fetch(
-      `${import.meta.env.VITE_API_URL}/api/concerts/artist_setlists/?mbid=${artist.mbid}`,
+      `${import.meta.env.VITE_API_URL}/api/concerts/artist_setlists/?${params}`,
       {
         headers: {
           Authorization: `Token ${token}`,
@@ -57,7 +86,21 @@ function AddConcertPage() {
       },
     )
       .then((response) => response.json())
-      .then((data) => setSetlists(data.setlist));
+      .then((data) => {
+        if (data.setlist) {
+          setSetlists(data.setlist);
+          setSetlistError(null);
+        } else {
+          setSetlists([]);
+          setSetlistError("Couldn't load shows. Retrying...");
+          setTimeout(() => fetchSetlists(mbid, year, countryCode), 1500);
+        }
+      });
+  };
+
+  const handleSelectArtist = (artist: Artist) => {
+    setSelectedArtist(artist);
+    fetchSetlists(artist.mbid, yearFilter, countryFilter);
   };
 
   const handleCreateConcert = (setlistID: string) => {
@@ -100,6 +143,26 @@ function AddConcertPage() {
     });
   };
 
+  useEffect(() => {
+    if (!selectedArtist) return;
+
+    const timer = setTimeout(() => {
+      fetchSetlists(selectedArtist.mbid, yearFilter, countryFilter);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [yearFilter, countryFilter]);
+
+  const selectClassNames = {
+    control: () => "bg-brand-card border border-gray-800 rounded-md px-1 w-48",
+    singleValue: () => "text-white",
+    input: () => "text-white",
+    menu: () => "bg-brand-card border border-gray-800 rounded-md mt-1",
+    option: ({ isFocused }: { isFocused: boolean }) =>
+      isFocused ? "bg-brand-gold text-black px-3 py-2" : "text-white px-3 py-2",
+    placeholder: () => "text-gray-500",
+  };
+
   return (
     <div className="min-h-[calc(100vh-88px)] bg-brand-bg text-white p-10">
       <h1 className="text-3xl font-bold mb-6 font-brand-mono">Add a Concert</h1>
@@ -119,6 +182,8 @@ function AddConcertPage() {
           Search
         </button>
       </form>
+
+      {setlistError && <p className="text-brand-error mb-2">{setlistError}</p>}
 
       {!selectedArtist && (
         <ul className="list-none p-0 flex flex-col gap-2">
@@ -149,6 +214,30 @@ function AddConcertPage() {
           >
             ← Back
           </button>
+          <div className="flex gap-3 mb-4">
+            <Select
+              options={yearOptions}
+              value={yearOptions.find((y) => y.value === yearFilter) || null}
+              onChange={(selected) =>
+                setYearFilter(selected ? selected.value : "")
+              }
+              placeholder="Year"
+              unstyled
+              classNames={selectClassNames}
+            />
+            <Select
+              options={countryOptions}
+              value={
+                countryOptions.find((c) => c.value === countryFilter) || null
+              }
+              onChange={(selected) =>
+                setCountryFilter(selected ? selected.value : "")
+              }
+              placeholder="Country"
+              unstyled
+              classNames={selectClassNames}
+            />
+          </div>
 
           <ul className="list-none p-0 flex flex-col gap-2">
             {setlists.map((setlist) => (
@@ -181,6 +270,12 @@ function AddConcertPage() {
               </li>
             ))}
           </ul>
+
+          {setlists.length === 0 && !setlistError && (
+            <p className="text-gray-500 mt-4">
+              No shows found for this filter.
+            </p>
+          )}
         </div>
       )}
     </div>

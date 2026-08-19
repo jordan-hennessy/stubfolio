@@ -42,6 +42,21 @@ function MyCollectionPage() {
       });
   };
 
+  const handleRemoveConcert = (stubId: number, concertId: number) => {
+    const token = localStorage.getItem("token");
+
+    fetch(`${import.meta.env.VITE_API_URL}/api/ticket-stubs/${stubId}/`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    }).then(() => {
+      setConcerts((previous) =>
+        previous.filter((concert) => concert.id !== concertId),
+      );
+    });
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -55,52 +70,63 @@ function MyCollectionPage() {
   }, []);
 
   return (
-    <div>
-      <h1>My Collection</h1>
+    <div className="min-h-[calc(100vh-88px)] bg-brand-bg text-white p-10 pb-20">
+      <h1 className="text-3xl font-bold mb-6 font-brand-mono">My Collection</h1>
 
       {/* Grid container: automatically fits as many cards per row as space allows */}
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-          gap: "20px",
-        }}
+        className="grid gap-5"
+        style={{ gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))" }}
       >
         {concerts.map((concert) => (
           <div
             key={concert.id}
-            style={{
-              backgroundColor: "#1a1a1a",
-              borderRadius: "12px",
-              overflow: "hidden",
-              color: "white",
-            }}
+            className="bg-brand-card rounded-xl overflow-hidden relative group"
           >
             {concert.ticket_stub?.design_seed ? (
               <>
-                <div
-                  style={{ backgroundColor: "#32ffa3", height: "150px" }}
-                ></div>
-                <p>{concert.genre_tags[0]}</p>
-                <h3>{concert.artist_name}</h3>
-                <p>{concert.venue_name}</p>
-                <p>
-                  {concert.city} — {concert.date}
-                </p>
+                <div className="h-36 bg-emerald-400"></div>
+                <div className="p-4">
+                  <p className="text-gray-500 text-sm mb-1">
+                    {concert.genre_tags[0]}
+                  </p>
+                  <h3 className="font-bold text-lg">{concert.artist_name}</h3>
+                  <p className="text-gray-400">{concert.venue_name}</p>
+                  <p className="text-gray-400 text-sm">
+                    {concert.city} — {concert.date}
+                  </p>
+                </div>
+                <button
+                  onClick={() =>
+                    handleRemoveConcert(concert.ticket_stub!.id, concert.id)
+                  }
+                  className="absolute top-2 right-2 px-2 py-1 rounded-md bg-black/60 text-brand-error text-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  Remove
+                </button>
               </>
             ) : (
-              <div
-                style={{
-                  border: "2px dashed #e8c98a",
-                  padding: "20px",
-                  textAlign: "center",
-                }}
-              >
-                <p>{concert.artist_name}</p>
+              <div className="border-2 border-dashed border-brand-gold rounded-xl m-1 p-5 text-center min-h-[280px] flex flex-col justify-center gap-3">
+                <div>
+                  <p className="font-bold">{concert.artist_name}</p>
+                  <p className="text-gray-400 text-sm">{concert.venue_name}</p>
+                  <p className="text-gray-400 text-sm">
+                    {concert.city} — {concert.date}
+                  </p>
+                </div>
                 <button
                   onClick={() => handleGenerateStub(concert.ticket_stub!.id)}
+                  className="px-3 py-2 rounded-md bg-brand-gold font-bold cursor-pointer hover:opacity-90 transition-opacity"
                 >
                   Generate Stub
+                </button>
+                <button
+                  onClick={() =>
+                    handleRemoveConcert(concert.ticket_stub!.id, concert.id)
+                  }
+                  className="text-brand-error text-sm cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                  Remove
                 </button>
               </div>
             )}

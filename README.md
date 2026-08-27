@@ -5,14 +5,12 @@ show you attended, and Stubfolio pulls the real setlist from [setlist.fm](https:
 uses an LLM to tag the night's _mood_, _genre_ and _energy_ from what was played, and turns it
 into a collectible ticket stub in your personal collection.
 
-  <a href="https://github.com/jordan-hennessy/stubfolio/actions/workflows/backend-tests.yml">
-    <img alt="Backend Tests" src="https://github.com/jordan-hennessy/stubfolio/actions/workflows/backend-tests.yml/badge.svg">
-  </a>
-  <img alt="Python 3.12+" src="https://img.shields.io/badge/python-3.12+-3776AB?logo=python&logoColor=yellow">
-  <img alt="Django 5" src="https://img.shields.io/badge/Django-5.1-092E20?logo=django&logoColor=white">
-  <img alt="React 19" src="https://img.shields.io/badge/React-19-20232A?logo=react">
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white">
-  <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+[![Backend Tests](https://github.com/jordan-hennessy/stubfolio/actions/workflows/backend-tests.yml/badge.svg)](https://github.com/jordan-hennessy/stubfolio/actions/workflows/backend-tests.yml)
+![Python](https://img.shields.io/badge/python-3.12+-3776AB?logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/Django-5.1-092E20?logo=django&logoColor=white)
+![React](https://img.shields.io/badge/React-19-20232A?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ### Live
 

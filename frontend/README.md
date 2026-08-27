@@ -1,75 +1,51 @@
-# React + TypeScript + Vite
+# Stubfolio - frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + TypeScript 6 + Vite single-page app for [Stubfolio](../README.md). Talks to the
+Django REST API over `fetch`, using a token kept in `localStorage`.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React 19** with **react-router 7**
+- **TypeScript 6** - bundler module resolution, `noUnusedLocals` / `noUnusedParameters`
+- **Vite** for dev server and build
+- **Tailwind CSS 4** via `@tailwindcss/vite`, with design tokens in `src/index.css`
+- **framer-motion** for interaction polish, **react-select** for the year/country filters
 
-## React Compiler
+## Run it
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+cp .env.example .env      # VITE_API_URL defaults to http://localhost:8000
+npm install
+npm run dev               # http://localhost:5173 - open /signup
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Requires **Node 20.19+ or 22.12+**. Make sure the [backend](../backend) is running first.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Scripts
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Command           | Does                                       |
+| ----------------- | ------------------------------------------ |
+| `npm run dev`     | Start the Vite dev server with HMR         |
+| `npm run build`   | Type-check (`tsc -b`) and build to `dist/` |
+| `npm run preview` | Serve the production build locally         |
+| `npm run lint`    | ESLint                                     |
+
+## Layout
 
 ```
+src/
+├── pages/
+│   ├── LoginPage.tsx        # token auth → localStorage
+│   ├── SignupPage.tsx
+│   ├── AddConcertPage.tsx   # artist search → setlist browse → import
+│   ├── MyCollectionPage.tsx # the collection grid + generate/remove
+│   └── ConcertDetailPage.tsx  # placeholder
+├── components/
+│   └── Navbar.tsx
+└── App.tsx                  # routes
+```
+
+## Deployment
+
+Deployed on Vercel. `vercel.json` rewrites all paths to `index.html` so client-side routing
+works on refresh. Set `VITE_API_URL` in the Vercel project to the deployed API URL.

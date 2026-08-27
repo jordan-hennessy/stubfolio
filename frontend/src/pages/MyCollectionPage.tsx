@@ -98,9 +98,9 @@ function MyCollectionPage() {
           >
             {concert.ticket_stub?.design_seed ? (
               <>
-                <div className="h-36 bg-emerald-400"></div>
+                <div className="h-36 w-full bg-linear-to-br from-brand-gold/25 via-brand-card to-brand-bg" />
                 <div className="p-4">
-                  <p className="text-gray-500 text-sm mb-1">
+                  <p className="text-gray-500 text-sm mb-1 capitalize">
                     {concert.genre_tags[0]}
                   </p>
                   <h3 className="font-bold text-lg">{concert.artist_name}</h3>

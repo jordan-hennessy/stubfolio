@@ -259,4 +259,4 @@ This is an actively-developed project. Currently on the list:
 
 ## License
 
-MIT - see [`LICENSE`](./LICENSE).
+MIT - see [`LICENSE`](./LICENSE)
